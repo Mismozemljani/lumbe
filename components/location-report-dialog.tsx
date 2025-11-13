@@ -2,9 +2,12 @@
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useItems } from "@/contexts/items-context"
-import { FileDown } from "lucide-react"
+import { FileDown, Search } from "lucide-react"
+import { useState } from "react"
 
 const safeNumber = (value: any): number => {
   const num = Number(value)
@@ -18,9 +21,24 @@ interface LocationReportDialogProps {
 
 export function LocationReportDialog({ open, onOpenChange }: LocationReportDialogProps) {
   const { items } = useItems()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedLocation, setSelectedLocation] = useState<string>("all")
 
-  // Group items by location
-  const itemsByLocation = items.reduce(
+  const uniqueLocations = Array.from(new Set(items.map((item) => item.lokacija || "Bez lokacije"))).sort()
+
+  const filteredItems = items.filter((item) => {
+    const matchesSearch =
+      searchTerm === "" ||
+      item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.project.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesLocation = selectedLocation === "all" || item.lokacija === selectedLocation
+
+    return matchesSearch && matchesLocation
+  })
+
+  const itemsByLocation = filteredItems.reduce(
     (acc, item) => {
       const location = item.lokacija || "Bez lokacije"
       if (!acc[location]) {
@@ -32,7 +50,6 @@ export function LocationReportDialog({ open, onOpenChange }: LocationReportDialo
     {} as Record<string, typeof items>,
   )
 
-  // Calculate totals for each location
   const locationGroups = Object.entries(itemsByLocation).map(([location, groupItems]) => {
     const totalStock = groupItems.reduce((sum, item) => sum + safeNumber(item.stock), 0)
     const totalReserved = groupItems.reduce((sum, item) => sum + safeNumber(item.reserved), 0)
@@ -184,11 +201,36 @@ export function LocationReportDialog({ open, onOpenChange }: LocationReportDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto resize">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto resize-both">
         <DialogHeader>
           <DialogTitle>Izveštaj po Lokaciji</DialogTitle>
           <DialogDescription>Pregled artikala grupisanih po lokaciji u magacinu</DialogDescription>
         </DialogHeader>
+
+        <div className="flex gap-4 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Pretraži po šifri, nazivu ili projektu..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="Sve lokacije" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Sve lokacije</SelectItem>
+              {uniqueLocations.map((location) => (
+                <SelectItem key={location} value={location}>
+                  {location}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         <div className="flex justify-end mb-4">
           <Button onClick={handleExportPDF} variant="outline">

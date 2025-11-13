@@ -152,6 +152,7 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
                 id="price"
                 type="number"
                 step="0.01"
+                min="0"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: Number.parseFloat(e.target.value) || 0 })}
               />
@@ -173,6 +174,7 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
                 id="input"
                 type="number"
                 step="1"
+                min="0"
                 value={formData.input}
                 onChange={(e) => setFormData({ ...formData, input: Number.parseInt(e.target.value) || 0 })}
               />
@@ -185,6 +187,7 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
               <Input
                 id="threshold"
                 type="number"
+                min="0"
                 value={formData.low_stock_threshold}
                 onChange={(e) =>
                   setFormData({ ...formData, low_stock_threshold: Number.parseInt(e.target.value) || 10 })
@@ -219,6 +222,7 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
                   id="okov_cena"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.okov_cena}
                   onChange={(e) => setFormData({ ...formData, okov_cena: Number.parseFloat(e.target.value) || 0 })}
                   disabled={hasPloceData}
@@ -230,6 +234,7 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
                   id="okov_kom"
                   type="number"
                   step="1"
+                  min="0"
                   value={formData.okov_kom}
                   onChange={(e) => setFormData({ ...formData, okov_kom: Number.parseInt(e.target.value) || 0 })}
                   disabled={hasPloceData}
@@ -264,6 +269,7 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
                   id="ploce_cena"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.ploce_cena}
                   onChange={(e) => setFormData({ ...formData, ploce_cena: Number.parseFloat(e.target.value) || 0 })}
                   disabled={hasOkovData}
@@ -275,6 +281,7 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
                   id="ploce_kom"
                   type="number"
                   step="1"
+                  min="0"
                   value={formData.ploce_kom}
                   onChange={(e) => setFormData({ ...formData, ploce_kom: Number.parseInt(e.target.value) || 0 })}
                   disabled={hasOkovData}

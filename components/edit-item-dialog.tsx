@@ -103,6 +103,7 @@ export function EditItemDialog({ item, open, onOpenChange, onUpdateItem }: EditI
                 id="edit-price"
                 type="number"
                 step="0.01"
+                min="0"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: Number.parseFloat(e.target.value) || 0 })}
               />
@@ -116,6 +117,7 @@ export function EditItemDialog({ item, open, onOpenChange, onUpdateItem }: EditI
                 id="edit-input"
                 type="number"
                 step="1"
+                min="0"
                 value={formData.input}
                 onChange={(e) => setFormData({ ...formData, input: Number.parseInt(e.target.value) || 0 })}
               />
@@ -125,6 +127,7 @@ export function EditItemDialog({ item, open, onOpenChange, onUpdateItem }: EditI
               <Input
                 id="edit-threshold"
                 type="number"
+                min="0"
                 value={formData.low_stock_threshold}
                 onChange={(e) =>
                   setFormData({ ...formData, low_stock_threshold: Number.parseInt(e.target.value) || 10 })
@@ -162,6 +165,7 @@ export function EditItemDialog({ item, open, onOpenChange, onUpdateItem }: EditI
                   id="edit-okov_cena"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.okov_cena || 0}
                   onChange={(e) => setFormData({ ...formData, okov_cena: Number.parseFloat(e.target.value) || 0 })}
                   disabled={hasPlоceData}
@@ -173,6 +177,7 @@ export function EditItemDialog({ item, open, onOpenChange, onUpdateItem }: EditI
                   id="edit-okov_kom"
                   type="number"
                   step="1"
+                  min="0"
                   value={formData.okov_kom || 0}
                   onChange={(e) => setFormData({ ...formData, okov_kom: Number.parseInt(e.target.value) || 0 })}
                   disabled={hasPlоceData}
@@ -201,6 +206,7 @@ export function EditItemDialog({ item, open, onOpenChange, onUpdateItem }: EditI
                   id="edit-ploce_cena"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.ploce_cena || 0}
                   onChange={(e) => setFormData({ ...formData, ploce_cena: Number.parseFloat(e.target.value) || 0 })}
                   disabled={hasOkovData}
@@ -212,6 +218,7 @@ export function EditItemDialog({ item, open, onOpenChange, onUpdateItem }: EditI
                   id="edit-ploce_kom"
                   type="number"
                   step="1"
+                  min="0"
                   value={formData.ploce_kom || 0}
                   onChange={(e) => setFormData({ ...formData, ploce_kom: Number.parseInt(e.target.value) || 0 })}
                   disabled={hasOkovData}

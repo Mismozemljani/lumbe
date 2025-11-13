@@ -5,14 +5,18 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, X, Maximize2, Minimize2, FileText } from "lucide-react"
 import type { Project } from "@/lib/types"
+import type { Reservation, Pickup, Item } from "@/lib/types"
 
 interface ProjectCalendarProps {
   projects: Project[]
+  reservations: Reservation[]
+  pickups: Pickup[]
+  items: Item[]
   onClose: () => void
   onViewPdf?: (project: Project) => void
 }
 
-export function ProjectCalendar({ projects, onClose, onViewPdf }: ProjectCalendarProps) {
+export function ProjectCalendar({ projects, reservations, pickups, items, onClose, onViewPdf }: ProjectCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isFullscreen, setIsFullscreen] = useState(false)
 
@@ -82,34 +86,34 @@ export function ProjectCalendar({ projects, onClose, onViewPdf }: ProjectCalenda
   }
 
   return (
-    <Card className={`p-4 ${isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={previousMonth}>
+    <Card className={`p-3 ${isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={previousMonth}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <div className="text-lg font-semibold">
+          <div className="text-base font-semibold">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </div>
-          <Button variant="outline" size="icon" onClick={nextMonth}>
+          <Button variant="outline" size="sm" onClick={nextMonth}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
         <div className="flex gap-2">
-          <Button variant="ghost" size="icon" onClick={() => setIsFullscreen(!isFullscreen)} title="Ceo ekran">
+          <Button variant="ghost" size="sm" onClick={() => setIsFullscreen(!isFullscreen)} title="Ceo ekran">
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-0 mb-2">
+      <div className="grid grid-cols-7 gap-0 mb-1">
         {["Pon", "Uto", "Sre", "Čet", "Pet", "Sub", "Ned"].map((day) => (
           <div
             key={day}
-            className="text-center font-semibold text-sm py-2 border border-slate-200 dark:border-slate-800"
+            className="text-center font-semibold text-xs py-1 border border-slate-200 dark:border-slate-800"
           >
             {day}
           </div>
@@ -118,37 +122,62 @@ export function ProjectCalendar({ projects, onClose, onViewPdf }: ProjectCalenda
 
       <div className="grid grid-cols-7 gap-0">{days}</div>
 
-      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-        <h4 className="font-semibold mb-3 text-sm">Aktivni Projekti:</h4>
-        <div className="flex flex-wrap gap-4">
-          {projects.map((project) => (
-            <div key={project.id} className="border-l-4 pl-3 py-2 flex-shrink-0" style={{ borderColor: project.color }}>
-              <div className="flex items-center gap-3">
-                <div className="w-4 h-4 rounded border border-slate-300" style={{ backgroundColor: project.color }} />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium whitespace-nowrap">{project.name}</span>
-                    {project.pdf_url && project.pdf_document && (
-                      <>
-                        <span className="text-muted-foreground">•</span>
-                        <button
-                          onClick={() => onViewPdf?.(project)}
-                          className="text-sm text-blue-600 hover:underline flex items-center gap-1 whitespace-nowrap"
-                        >
-                          <FileText className="h-3 w-3 text-red-600" />
-                          {project.pdf_document}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
-                    {new Date(project.start_date).toLocaleDateString("sr-RS")} -{" "}
-                    {new Date(project.end_date).toLocaleDateString("sr-RS")}
+      <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+        <h4 className="font-semibold mb-2 text-xs">Aktivni Projekti:</h4>
+        <div className="flex flex-wrap gap-3">
+          {projects.map((project) => {
+            const projectReservations = project.name
+              ? reservations?.filter((r) => {
+                  const item = items?.find((i) => i.id === r.item_id)
+                  return item?.project === project.name
+                })
+              : []
+            const projectPickups = project.name
+              ? pickups?.filter((p) => {
+                  const item = items?.find((i) => i.id === p.item_id)
+                  return item?.project === project.name && p.confirmed_at
+                })
+              : []
+
+            const reservationUsers = new Set(projectReservations.map((r) => r.user))
+            const pickupUsers = new Set(projectPickups.map((p) => p.user))
+
+            return (
+              <div
+                key={project.id}
+                className="border-l-4 pl-2 py-1 flex-shrink-0"
+                style={{ borderColor: project.color }}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded border border-slate-300" style={{ backgroundColor: project.color }} />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-xs whitespace-nowrap">{project.name}</span>
+                      {project.pdf_url && project.pdf_document && (
+                        <>
+                          <span className="text-muted-foreground text-xs">•</span>
+                          <button
+                            onClick={() => onViewPdf?.(project)}
+                            className="text-xs text-blue-600 hover:underline flex items-center gap-1 whitespace-nowrap"
+                          >
+                            <FileText className="h-3 w-3 text-red-600" />
+                            {project.pdf_document}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
+                      {new Date(project.start_date).toLocaleDateString("sr-RS")} -{" "}
+                      {new Date(project.end_date).toLocaleDateString("sr-RS")}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      Preuzimanje: {pickupUsers.size} | Rezervacija: {reservationUsers.size}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </Card>

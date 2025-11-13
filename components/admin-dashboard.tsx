@@ -16,21 +16,7 @@ import { ProjectCalendar } from "@/components/project-calendar"
 import { PdfViewerDialog } from "@/components/pdf-viewer-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Plus,
-  FileText,
-  TrendingUp,
-  Upload,
-  Users,
-  Hash,
-  Type,
-  RefreshCw,
-  MapPin,
-  Calendar,
-  FolderKanban,
-  Search,
-  Download,
-} from "lucide-react"
+import { Plus, FileText, TrendingUp, Upload, Users, Hash, Type, RefreshCw, MapPin, Calendar, FolderKanban, Search, Download } from 'lucide-react'
 import { useItems } from "@/contexts/items-context"
 import { useProjects } from "@/contexts/projects-context"
 import type { ImportRow, Project } from "@/lib/types"
@@ -260,7 +246,7 @@ export function AdminDashboard() {
               {projectNames.map((projectName) => {
                 const project = projects.find((p) => p.name === projectName)
                 return (
-                  <div key={projectName} className="flex gap-1">
+                  <div key={projectName} className="flex gap-1 items-center">
                     <Button variant="outline" size="sm" onClick={() => setSelectedProject(projectName)}>
                       <FileText className="h-4 w-4 mr-2" />
                       {projectName}
@@ -282,15 +268,15 @@ export function AdminDashboard() {
           </div>
         )}
 
-        <div className={isCalendarOpen ? "grid grid-rows-2 gap-4 h-[calc(100vh-300px)]" : ""}>
+        <div className={isCalendarOpen ? "grid lg:grid-cols-[1fr_70%] gap-4" : ""}>
           <div className={isCalendarOpen ? "overflow-auto" : ""}>
             <div className="border rounded-lg bg-card overflow-hidden">
               <div
                 ref={topScrollRef}
-                className="overflow-x-auto bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 border-b-2 border-slate-400 dark:border-slate-600"
-                style={{ height: "20px" }}
+                className="overflow-x-auto overflow-y-hidden bg-slate-200 dark:bg-slate-700 border-b border-slate-300 dark:border-slate-600"
+                style={{ height: "18px" }}
               >
-                <div ref={topScrollContentRef} style={{ height: "20px", width: "100%" }} />
+                <div ref={topScrollContentRef} style={{ height: "1px", width: "100%" }} />
               </div>
               <div ref={tableScrollRef} className="max-h-[280px] overflow-auto">
                 <ItemsTable
@@ -307,7 +293,14 @@ export function AdminDashboard() {
           </div>
           {isCalendarOpen && (
             <div className="overflow-auto">
-              <ProjectCalendar projects={projects} onClose={() => setIsCalendarOpen(false)} onViewPdf={handleViewPdf} />
+              <ProjectCalendar
+                projects={projects}
+                reservations={reservations}
+                pickups={pickups}
+                items={items}
+                onClose={() => setIsCalendarOpen(false)}
+                onViewPdf={handleViewPdf}
+              />
             </div>
           )}
         </div>
