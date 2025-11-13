@@ -87,7 +87,7 @@ export function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto resize">
+      <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto resize">
         <DialogHeader>
           <DialogTitle>Dodaj Artikal ili Novu Količinu</DialogTitle>
           <DialogDescription>

@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import type { Project } from "@/lib/types"
 import { mockProjects } from "@/lib/mock-data"
 
@@ -15,7 +15,19 @@ interface ProjectsContextType {
 const ProjectsContext = createContext<ProjectsContextType | undefined>(undefined)
 
 export function ProjectsProvider({ children }: { children: ReactNode }) {
-  const [projects, setProjects] = useState<Project[]>(mockProjects)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  useEffect(() => {
+    const loadedProjects = localStorage.getItem("warehouse_projects")
+    setProjects(loadedProjects ? JSON.parse(loadedProjects) : mockProjects)
+    setIsInitialized(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isInitialized) return
+    localStorage.setItem("warehouse_projects", JSON.stringify(projects))
+  }, [projects, isInitialized])
 
   const addProject = (projectData: Omit<Project, "id" | "created_at" | "updated_at">) => {
     const newProject: Project = {

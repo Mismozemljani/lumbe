@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { X, Download } from "lucide-react"
+import { Download } from "lucide-react"
 
 interface PdfViewerDialogProps {
   open: boolean
@@ -14,21 +14,16 @@ interface PdfViewerDialogProps {
 export function PdfViewerDialog({ open, onOpenChange, pdfUrl, title }: PdfViewerDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] h-[90vh] overflow-hidden resize p-0">
+      <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] h-[90vh] overflow-hidden p-0" showCloseButton={true}>
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
             <DialogTitle>{title}</DialogTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" asChild>
-                <a href={pdfUrl} download={title} target="_blank" rel="noopener noreferrer">
-                  <Download className="h-4 w-4 mr-2" />
-                  Preuzmi
-                </a>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" asChild>
+              <a href={pdfUrl} download={title} target="_blank" rel="noopener noreferrer">
+                <Download className="h-4 w-4 mr-2" />
+                Preuzmi
+              </a>
+            </Button>
           </div>
         </DialogHeader>
         <div className="flex-1 h-full w-full overflow-hidden">

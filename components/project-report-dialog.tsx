@@ -130,7 +130,7 @@ export function ProjectReportDialog({ project, items, open, onOpenChange }: Proj
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto resize">
+      <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto resize">
         <DialogHeader>
           <DialogTitle>Izveštaj za projekat: {project}</DialogTitle>
           <DialogDescription>Pregled svih artikala i njihovih pozicija u magacinu</DialogDescription>

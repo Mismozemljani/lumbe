@@ -20,9 +20,6 @@ export function DashboardHeader() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-xl font-bold">Magacin Sistem</h1>
-            </div>
             <Image
               src="/images/lumberline-logo.png"
               alt="Lumberline Logo"

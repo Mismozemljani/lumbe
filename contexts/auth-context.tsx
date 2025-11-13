@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import type { User } from "@/lib/types"
-import { mockUsers } from "@/lib/mock-data"
+import { useUsers } from "./users-context"
 
 interface AuthContextType {
   user: User | null
@@ -16,6 +16,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { users } = useUsers()
 
   useEffect(() => {
     // Check for stored user session
@@ -27,8 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock authentication - in production, this would call Supabase
-    const foundUser = mockUsers.find((u) => u.email === email)
+    const foundUser = users.find((u) => u.email === email)
 
     if (foundUser) {
       setUser(foundUser)

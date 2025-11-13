@@ -3,7 +3,14 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Download } from "lucide-react"
 import type { Item, InputHistory } from "@/lib/types"
+
+const safeNumber = (value: any): number => {
+  const num = Number(value)
+  return isNaN(num) || !isFinite(num) ? 0 : num
+}
 
 interface SupplierHistoryDialogProps {
   item: Item
@@ -21,9 +28,123 @@ export function SupplierHistoryDialog({ item, inputHistory, open, onOpenChange }
   const totalValue = history.reduce((sum, h) => sum + h.quantity * h.price, 0)
   const uniqueSuppliers = new Set(history.map((h) => h.supplier))
 
+  const handleExportPDF = () => {
+    const printWindow = window.open("", "", "width=800,height=600")
+    if (!printWindow) return
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Istorija Dobavljača - ${item.name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #333; font-size: 24px; margin-bottom: 10px; }
+          .info { color: #666; font-size: 14px; margin-bottom: 20px; }
+          .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+          .summary-item { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+          .summary-label { font-size: 12px; color: #666; margin-bottom: 5px; }
+          .summary-value { font-size: 28px; font-weight: bold; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 12px; }
+          th { background-color: #f5f5f5; font-weight: bold; }
+          .badge { display: inline-block; padding: 4px 12px; border: 1px solid #ddd; border-radius: 12px; font-size: 11px; }
+          .suppliers { margin-top: 20px; padding: 15px; background-color: #f9fafb; border-radius: 8px; }
+          .supplier-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+          @media print {
+            body { padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Istorija Dobavljača - ${item.name}</h1>
+        <div class="info">
+          Šifra: ${item.code} | Projekat: ${item.project}
+        </div>
+        
+        <div class="summary">
+          <div class="summary-item">
+            <div class="summary-label">Ukupna Količina</div>
+            <div class="summary-value">${totalQuantity}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Ukupna Vrednost</div>
+            <div class="summary-value">${totalValue.toFixed(2)} RSD</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Broj Dobavljača</div>
+            <div class="summary-value">${uniqueSuppliers.size}</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Datum i Vreme</th>
+              <th>Dobavljač</th>
+              <th style="text-align: right;">Količina</th>
+              <th style="text-align: right;">Cena po Jedinici</th>
+              <th style="text-align: right;">Ukupna Vrednost</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${history
+              .map(
+                (entry) => `
+              <tr>
+                <td>${new Date(entry.input_date).toLocaleString("sr-RS")}</td>
+                <td><span class="badge">${entry.supplier}</span></td>
+                <td style="text-align: right; font-weight: 500;">${entry.quantity}</td>
+                <td style="text-align: right;">${entry.price.toFixed(2)} RSD</td>
+                <td style="text-align: right; font-weight: bold;">${(entry.quantity * entry.price).toFixed(2)} RSD</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+
+        ${
+          uniqueSuppliers.size > 1
+            ? `
+          <div class="suppliers">
+            <h4 style="margin-top: 0; margin-bottom: 15px;">Dobavljači po Ceni</h4>
+            ${Array.from(uniqueSuppliers)
+              .map((supplier) => {
+                const supplierEntries = history.filter((h) => h.supplier === supplier)
+                const avgPrice = supplierEntries.reduce((sum, h) => sum + h.price, 0) / supplierEntries.length
+                const totalQty = supplierEntries.reduce((sum, h) => sum + h.quantity, 0)
+                return `
+                <div class="supplier-item">
+                  <span style="font-weight: 500;">${supplier}</span>
+                  <span style="color: #666; font-size: 12px;">
+                    Prosečna cena: ${avgPrice.toFixed(2)} RSD | Ukupno: ${totalQty} kom
+                  </span>
+                </div>
+              `
+              })
+              .join("")}
+          </div>
+        `
+            : ""
+        }
+      </body>
+      </html>
+    `
+
+    printWindow.document.write(htmlContent)
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => {
+      printWindow.print()
+      printWindow.close()
+    }, 250)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto resize">
+      <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto resize">
         <DialogHeader>
           <DialogTitle>Istorija Dobavljača - {item.name}</DialogTitle>
           <DialogDescription>
@@ -112,6 +233,14 @@ export function SupplierHistoryDialog({ item, inputHistory, open, onOpenChange }
             </div>
           </div>
         )}
+
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={handleExportPDF}>
+            <Download className="h-4 w-4 mr-2" />
+            Izvezi PDF
+          </Button>
+          <Button onClick={() => onOpenChange(false)}>Zatvori</Button>
+        </div>
       </DialogContent>
     </Dialog>
   )

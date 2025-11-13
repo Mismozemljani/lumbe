@@ -52,7 +52,7 @@ export function ProjectCalendar({ projects, onClose, onViewPdf }: ProjectCalenda
 
   const days = []
   for (let i = 0; i < adjustedFirstDay; i++) {
-    days.push(<div key={`empty-${i}`} className="h-24 border border-slate-200 dark:border-slate-800" />)
+    days.push(<div key={`empty-${i}`} className="h-28 border border-slate-200 dark:border-slate-800" />)
   }
 
   for (let day = 1; day <= daysInMonth; day++) {
@@ -60,7 +60,7 @@ export function ProjectCalendar({ projects, onClose, onViewPdf }: ProjectCalenda
     days.push(
       <div
         key={day}
-        className="h-24 border border-slate-200 dark:border-slate-800 p-1 overflow-y-auto hover:bg-slate-50 dark:hover:bg-slate-900"
+        className="h-28 border border-slate-200 dark:border-slate-800 p-1 overflow-y-auto hover:bg-slate-50 dark:hover:bg-slate-900"
       >
         <div className="font-semibold text-sm mb-1">{day}</div>
         {projectsOnDay.map((project) => (
@@ -84,7 +84,17 @@ export function ProjectCalendar({ projects, onClose, onViewPdf }: ProjectCalenda
   return (
     <Card className={`p-4 ${isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Kalendar Projekata</h3>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={previousMonth}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="text-lg font-semibold">
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          </div>
+          <Button variant="outline" size="icon" onClick={nextMonth}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
         <div className="flex gap-2">
           <Button variant="ghost" size="icon" onClick={() => setIsFullscreen(!isFullscreen)} title="Ceo ekran">
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -93,18 +103,6 @@ export function ProjectCalendar({ projects, onClose, onViewPdf }: ProjectCalenda
             <X className="h-4 w-4" />
           </Button>
         </div>
-      </div>
-
-      <div className="flex items-center justify-between mb-4">
-        <Button variant="outline" size="icon" onClick={previousMonth}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <div className="text-lg font-semibold">
-          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-        </div>
-        <Button variant="outline" size="icon" onClick={nextMonth}>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
       </div>
 
       <div className="grid grid-cols-7 gap-0 mb-2">

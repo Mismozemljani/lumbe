@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/contexts/auth-context"
-import { mockUsers } from "@/lib/mock-data"
+import { useUsers } from "@/contexts/users-context"
 import type { Item, Reservation } from "@/lib/types"
 
 const safeNumber = (value: any): number => {
@@ -26,11 +26,12 @@ interface ReservationDialogProps {
 
 export function ReservationDialog({ item, open, onOpenChange, onAddReservation }: ReservationDialogProps) {
   const { user } = useAuth()
+  const { users } = useUsers()
   const [quantity, setQuantity] = useState("")
   const [reservedBy, setReservedBy] = useState(user?.name || "")
   const [notes, setNotes] = useState("")
 
-  const reservationUsers = mockUsers.filter((u) => u.role === "REZERVACIJA")
+  const reservationUsers = users.filter((u) => u.role === "REZERVACIJA")
   const userNames = reservationUsers.map((u) => u.name).sort()
 
   const handleSubmit = (e: React.FormEvent) => {

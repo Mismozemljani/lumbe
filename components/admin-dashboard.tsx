@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { ItemsTable } from "@/components/items-table"
 import { AddItemDialog } from "@/components/add-item-dialog"
@@ -29,6 +29,7 @@ import {
   Calendar,
   FolderKanban,
   Search,
+  Download,
 } from "lucide-react"
 import { useItems } from "@/contexts/items-context"
 import { useProjects } from "@/contexts/projects-context"
@@ -111,6 +112,82 @@ export function AdminDashboard() {
     }
   }
 
+  const handleDownloadSample = () => {
+    const headers = "šifra,projekat,naziv,dobavljač,cena,ulaz,lokacija\n"
+    const rows = items
+      .map(
+        (item) =>
+          `${item.code || ""},${item.project || ""},${item.name || ""},${item.supplier || ""},${item.price || 0},${item.input || 0},${item.lokacija || ""}`,
+      )
+      .join("\n")
+    const csvContent = headers + rows
+
+    const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    link.href = URL.createObjectURL(blob)
+    link.download = "primer-magacin-import.csv"
+    link.click()
+  }
+
+  const topScrollRef = useRef<HTMLDivElement>(null)
+  const tableScrollRef = useRef<HTMLDivElement>(null)
+  const topScrollContentRef = useRef<HTMLDivElement>(null)
+
+  // Sync scrollbars
+  useEffect(() => {
+    const topScroll = topScrollRef.current
+    const tableScroll = tableScrollRef.current
+
+    if (!topScroll || !tableScroll) return
+
+    const handleTopScroll = () => {
+      if (tableScroll) {
+        tableScroll.scrollLeft = topScroll.scrollLeft
+      }
+    }
+
+    const handleTableScroll = () => {
+      if (topScroll) {
+        topScroll.scrollLeft = tableScroll.scrollLeft
+      }
+    }
+
+    topScroll.addEventListener("scroll", handleTopScroll)
+    tableScroll.addEventListener("scroll", handleTableScroll)
+
+    return () => {
+      topScroll.removeEventListener("scroll", handleTopScroll)
+      tableScroll.removeEventListener("scroll", handleTableScroll)
+    }
+  }, [])
+
+  // Update top scrollbar width to match table width
+  useEffect(() => {
+    const updateScrollbarWidth = () => {
+      const tableScroll = tableScrollRef.current
+      const topScrollContent = topScrollContentRef.current
+
+      if (tableScroll && topScrollContent) {
+        const tableWidth = tableScroll.scrollWidth
+        topScrollContent.style.width = `${tableWidth}px`
+        console.log("[v0] Updated top scrollbar width to:", tableWidth)
+      }
+    }
+
+    // Update immediately and after delays to ensure table is rendered
+    updateScrollbarWidth()
+    const timeoutId1 = setTimeout(updateScrollbarWidth, 100)
+    const timeoutId2 = setTimeout(updateScrollbarWidth, 500)
+
+    window.addEventListener("resize", updateScrollbarWidth)
+
+    return () => {
+      clearTimeout(timeoutId1)
+      clearTimeout(timeoutId2)
+      window.removeEventListener("resize", updateScrollbarWidth)
+    }
+  }, [filteredItems, isCalendarOpen])
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <DashboardHeader />
@@ -149,11 +226,9 @@ export function AdminDashboard() {
               <TrendingUp className="h-4 w-4 mr-2" />
               Izveštaj po Dobavljačima
             </Button>
-            <Button variant="ghost" asChild>
-              <a href="/primer-magacin-import.csv" download="primer-magacin-import.csv">
-                <FileText className="h-4 w-4 mr-2" />
-                Preuzmi Primer
-              </a>
+            <Button variant="ghost" onClick={handleDownloadSample}>
+              <Download className="h-4 w-4 mr-2" />
+              Preuzmi Primer
             </Button>
             <Button variant="outline" onClick={() => setIsImportDialogOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
@@ -209,16 +284,28 @@ export function AdminDashboard() {
         )}
 
         <div className={isCalendarOpen ? "grid grid-rows-2 gap-4 h-[calc(100vh-300px)]" : ""}>
-          <div className={isCalendarOpen ? "overflow-auto" : "max-h-[600px] overflow-auto"}>
-            <ItemsTable
-              items={filteredItems}
-              inputHistory={inputHistory}
-              reservations={reservations}
-              pickups={pickups}
-              onUpdateItem={updateItem}
-              onDeleteItem={deleteItem}
-              isAdmin={true}
-            />
+          <div className={isCalendarOpen ? "overflow-auto" : ""}>
+            <div className="border rounded-lg bg-card overflow-hidden">
+              <div
+                ref={topScrollRef}
+                className="overflow-x-auto overflow-y-hidden bg-slate-200 dark:bg-slate-800 border-b"
+                style={{ height: "17px" }}
+              >
+                <div ref={topScrollContentRef} style={{ height: "17px", width: "100%" }} />
+              </div>
+              {/* Table with bottom scrollbar */}
+              <div ref={tableScrollRef} className="max-h-[350px] overflow-auto">
+                <ItemsTable
+                  items={filteredItems}
+                  inputHistory={inputHistory}
+                  reservations={reservations}
+                  pickups={pickups}
+                  onUpdateItem={updateItem}
+                  onDeleteItem={deleteItem}
+                  isAdmin={true}
+                />
+              </div>
+            </div>
           </div>
           {isCalendarOpen && (
             <div className="overflow-auto">

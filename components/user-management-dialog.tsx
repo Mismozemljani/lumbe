@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Trash2, Key } from "lucide-react"
-import { mockUsers } from "@/lib/mock-data"
+import { useUsers } from "@/contexts/users-context"
 
 interface UserManagementDialogProps {
   open: boolean
@@ -16,7 +16,7 @@ interface UserManagementDialogProps {
 }
 
 export function UserManagementDialog({ open, onOpenChange }: UserManagementDialogProps) {
-  const [users, setUsers] = useState(mockUsers)
+  const { users, addUser, deleteUser } = useUsers()
   const [newUserName, setNewUserName] = useState("")
   const [newUserEmail, setNewUserEmail] = useState("")
   const [newUserRole, setNewUserRole] = useState<"MAGACIN_ADMIN" | "REZERVACIJA" | "PREUZIMANJE">("REZERVACIJA")
@@ -25,30 +25,21 @@ export function UserManagementDialog({ open, onOpenChange }: UserManagementDialo
   const handleAddUser = () => {
     if (!newUserName.trim()) return
 
-    const newUser = {
-      id: Math.random().toString(36).substr(2, 9),
+    addUser({
       name: newUserName,
       email: newUserEmail || `${newUserName.toLowerCase().replace(/\s+/g, ".")}@magacin.rs`,
       role: newUserRole,
       userCode: newUserCode.trim() || undefined,
-    }
+    })
 
-    setUsers([...users, newUser])
     setNewUserName("")
     setNewUserEmail("")
     setNewUserRole("REZERVACIJA")
     setNewUserCode("")
-
-    // Update mock data
-    mockUsers.push(newUser)
   }
 
   const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter((u) => u.id !== userId))
-    const index = mockUsers.findIndex((u) => u.id === userId)
-    if (index > -1) {
-      mockUsers.splice(index, 1)
-    }
+    deleteUser(userId)
   }
 
   const adminUsers = users.filter((u) => u.role === "MAGACIN_ADMIN")

@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Upload, FileSpreadsheet, AlertCircle, TableIcon } from "lucide-react"
+import { Upload, FileSpreadsheet, AlertCircle, TableIcon, Download } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -215,6 +215,38 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
     return value.toFixed(2)
   }
 
+  const downloadSampleCSV = () => {
+    const headers = ["šifra", "projekat", "naziv", "dobavljač", "cena", "ulaz", "lokacija"]
+    const sampleData = [
+      ["WH-001", "Projekat A", "Vijci M6x20", "Dobavljač 3", "0.55", "1800", "Polica A1"],
+      ["WH-002", "Projekat A", "Matice M6", "Dobavljač 1", "0.30", "800", "Polica A2"],
+      ["WH-003", "Projekat B", "Šrafovi M8x30", "Dobavljač 2", "0.75", "500", "Polica B1"],
+      ["WH-004", "Skladište", "Podloške 8mm", "Dobavljač 2", "0.20", "1200", "Polica C1"],
+      ["WH-005", "Skladište", "Kablovi 2.5mm", "Dobavljač 3", "2.50", "300", "Polica C2"],
+      ["WH-006", "Projekat C", "Prekidači", "Dobavljač 3", "5.00", "200", "Polica D1"],
+      ["WH-007", "Projekat D", "LED Sijalice", "Dobavljač 4", "8.00", "150", "Polica D2"],
+      ["WH-008", "Projekat A", "Šper ploča breza", "TIS", "18.00", "100", "Dobavljač 1"],
+    ]
+
+    // Create CSV content with BOM for proper UTF-8 encoding
+    const BOM = "\uFEFF"
+    const csvContent = BOM + [headers.join(","), ...sampleData.map((row) => row.join(","))].join("\n")
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    const url = URL.createObjectURL(blob)
+
+    link.setAttribute("href", url)
+    link.setAttribute("download", "primer-magacin-import.csv")
+    link.style.visibility = "hidden"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    console.log("[v0] Sample CSV downloaded with", sampleData.length, "rows")
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto resize">
@@ -226,6 +258,13 @@ export function ImportDialog({ open, onOpenChange, onImport }: ImportDialogProps
         </DialogHeader>
 
         <div className="space-y-4">
+          <div className="flex justify-end">
+            <Button type="button" variant="outline" size="sm" onClick={downloadSampleCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Preuzmi Primer
+            </Button>
+          </div>
+
           <div className="border-2 border-dashed rounded-lg p-8 text-center">
             <FileSpreadsheet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <Label htmlFor="file-upload" className="cursor-pointer">

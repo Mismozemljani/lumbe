@@ -74,7 +74,105 @@ export function StockHistoryDialog({
   }
 
   const handleExportPDF = () => {
-    window.print()
+    const printWindow = window.open("", "", "width=800,height=600")
+    if (!printWindow) return
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Istorija Stanja - ${item.name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #333; font-size: 24px; margin-bottom: 10px; }
+          .info { color: #666; font-size: 14px; margin-bottom: 20px; }
+          .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+          .summary-item { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+          .summary-label { font-size: 12px; color: #666; margin-bottom: 5px; }
+          .summary-value { font-size: 28px; font-weight: bold; }
+          .green { color: #16a34a; }
+          .yellow { color: #ca8a04; }
+          .blue { color: #2563eb; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 12px; }
+          th { background-color: #f5f5f5; font-weight: bold; }
+          .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+          .badge-green { background-color: #dcfce7; color: #166534; }
+          .badge-yellow { background-color: #fef9c3; color: #854d0e; }
+          .badge-blue { background-color: #dbeafe; color: #1e40af; }
+          @media print {
+            body { padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Istorija Stanja - ${item.name}</h1>
+        <div class="info">
+          Šifra: ${item.code} | Trenutno stanje: ${safeNumber(item.stock)} | 
+          Rezervisano: ${safeNumber(item.reserved)} | Dostupno: ${safeNumber(item.available)}
+        </div>
+        
+        <div class="summary">
+          <div class="summary-item">
+            <div class="summary-label">Ukupan Ulaz</div>
+            <div class="summary-value green">${safeNumber(itemInputs.reduce((sum, h) => sum + h.quantity, 0))}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Ukupno Rezervisano</div>
+            <div class="summary-value yellow">${safeNumber(itemReservations.reduce((sum, r) => sum + r.quantity, 0))}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Ukupno Preuzeto</div>
+            <div class="summary-value blue">${safeNumber(itemPickups.reduce((sum, p) => sum + p.quantity, 0))}</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Datum i Vreme</th>
+              <th>Tip</th>
+              <th style="text-align: right;">Količina</th>
+              <th>Osoba/Dobavljač</th>
+              <th>Šifra</th>
+              <th>Detalji</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${changes
+              .map(
+                (change) => `
+              <tr>
+                <td>${formatDateTime(change.date)}</td>
+                <td>
+                  <span class="badge badge-${change.type === "Ulaz" ? "green" : change.type === "Rezervacija" ? "yellow" : "blue"}">
+                    ${change.type}
+                  </span>
+                </td>
+                <td style="text-align: right; font-weight: 500; color: ${safeNumber(change.quantity) > 0 ? "#16a34a" : "#dc2626"}">
+                  ${safeNumber(change.quantity) > 0 ? "+" : ""}${safeNumber(change.quantity)}
+                </td>
+                <td>${change.person}</td>
+                <td style="font-family: monospace;">${change.code}</td>
+                <td style="color: #666;">${change.details}</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `
+
+    printWindow.document.write(htmlContent)
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => {
+      printWindow.print()
+      printWindow.close()
+    }, 250)
   }
 
   const totalInput = itemInputs.reduce((sum, h) => sum + h.quantity, 0)
@@ -83,7 +181,7 @@ export function StockHistoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto resize">
+      <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto resize">
         <DialogHeader>
           <DialogTitle>Istorija Stanja - {item.name}</DialogTitle>
           <DialogDescription>

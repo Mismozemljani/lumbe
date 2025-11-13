@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { UsersProvider } from "@/contexts/users-context"
 import { AuthProvider } from "@/contexts/auth-context"
 import { ItemsProvider } from "@/contexts/items-context"
 import { ProjectsProvider } from "@/contexts/projects-context"
@@ -25,14 +26,16 @@ export default function RootLayout({
   return (
     <html lang="sr">
       <body className={`font-sans antialiased`}>
-        <AuthProvider>
-          <ProjectsProvider>
-            <ItemsProvider>
-              {children}
-              <Toaster />
-            </ItemsProvider>
-          </ProjectsProvider>
-        </AuthProvider>
+        <UsersProvider>
+          <AuthProvider>
+            <ProjectsProvider>
+              <ItemsProvider>
+                {children}
+                <Toaster />
+              </ItemsProvider>
+            </ProjectsProvider>
+          </AuthProvider>
+        </UsersProvider>
         <Analytics />
       </body>
     </html>

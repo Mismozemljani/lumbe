@@ -162,7 +162,7 @@ export function SupplierReportDialog({ open, onOpenChange }: SupplierReportDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto resize">
+      <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto resize">
         <DialogHeader>
           <DialogTitle>Izveštaj po dobavljačima</DialogTitle>
           <DialogDescription>Pregled ulaza po dobavljačima i datumima</DialogDescription>

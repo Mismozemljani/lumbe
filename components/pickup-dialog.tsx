@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
-import { mockUsers } from "@/lib/mock-data"
+import { useUsers } from "@/contexts/users-context"
 import type { Item, Pickup } from "@/lib/types"
 
 const safeNumber = (value: any): number => {
@@ -28,13 +28,14 @@ interface PickupDialogProps {
 
 export function PickupDialog({ item, open, onOpenChange, onAddPickup }: PickupDialogProps) {
   const { user } = useAuth()
+  const { users } = useUsers()
   const [quantity, setQuantity] = useState("")
   const [pickedUpBy, setPickedUpBy] = useState(user?.name || "")
   const [confirmationCode, setConfirmationCode] = useState("")
   const [notes, setNotes] = useState("")
   const [codeError, setCodeError] = useState("")
 
-  const pickupUsers = mockUsers.filter((u) => u.role === "PREUZIMANJE")
+  const pickupUsers = users.filter((u) => u.role === "PREUZIMANJE")
   const userNames = pickupUsers.map((u) => u.name).sort()
 
   const handleCodeChange = (value: string) => {
@@ -88,7 +89,7 @@ export function PickupDialog({ item, open, onOpenChange, onAddPickup }: PickupDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="resize">
+      <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto resize">
         <DialogHeader>
           <DialogTitle>Preuzimanje Artikla</DialogTitle>
           <DialogDescription>
