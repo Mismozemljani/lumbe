@@ -288,10 +288,10 @@ export function AdminDashboard() {
             <div className="border rounded-lg bg-card overflow-hidden">
               <div
                 ref={topScrollRef}
-                className="overflow-x-auto overflow-y-hidden bg-slate-200 dark:bg-slate-800 border-b"
-                style={{ height: "17px" }}
+                className="overflow-x-auto overflow-y-hidden bg-slate-300 dark:bg-slate-700 border-b-2 border-slate-400 dark:border-slate-600"
+                style={{ height: "20px" }}
               >
-                <div ref={topScrollContentRef} style={{ height: "17px", width: "100%" }} />
+                <div ref={topScrollContentRef} style={{ height: "1px", width: "100%" }} />
               </div>
               {/* Table with bottom scrollbar */}
               <div ref={tableScrollRef} className="max-h-[350px] overflow-auto">
