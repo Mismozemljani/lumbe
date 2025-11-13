@@ -14,22 +14,25 @@ interface PdfViewerDialogProps {
 export function PdfViewerDialog({ open, onOpenChange, pdfUrl, title }: PdfViewerDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] h-[90vh] overflow-hidden p-0" showCloseButton={true}>
-        <DialogHeader className="px-6 py-4 border-b">
-          <div className="flex items-center justify-between">
-            <DialogTitle>{title}</DialogTitle>
+      <DialogContent className="max-w-[98vw] h-[95vh]" showCloseButton={true}>
+        <DialogHeader>
+          <DialogTitle className="flex items-center justify-between">
+            <span>{title}</span>
             <Button variant="outline" size="sm" asChild>
               <a href={pdfUrl} download={title} target="_blank" rel="noopener noreferrer">
                 <Download className="h-4 w-4 mr-2" />
                 Preuzmi
               </a>
             </Button>
-          </div>
+          </DialogTitle>
         </DialogHeader>
-        <div className="flex-1 h-full w-full overflow-hidden">
-          <object data={pdfUrl} type="application/pdf" className="w-full h-full" aria-label={title}>
-            <embed src={pdfUrl} type="application/pdf" className="w-full h-full" />
-          </object>
+        <div className="flex-1 w-full h-full overflow-hidden">
+          <iframe
+            src={pdfUrl}
+            className="w-full h-full border-0"
+            title={title}
+            sandbox="allow-same-origin allow-scripts allow-downloads"
+          />
         </div>
       </DialogContent>
     </Dialog>
