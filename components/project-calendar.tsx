@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, X, Maximize2, Minimize2, FileText } from "lucide-react"
+import { ChevronLeft, ChevronRight, X, Maximize2, Minimize2, FileText } from 'lucide-react'
 import type { Project } from "@/lib/types"
 import type { Reservation, Pickup, Item } from "@/lib/types"
 
@@ -35,9 +35,11 @@ export function ProjectCalendar({ projects, reservations, pickups, items, onClos
     "Decembar",
   ]
 
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
   const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
+  
+  const maxDaysToShow = Math.min(28, daysInMonth)
 
   const previousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
@@ -54,19 +56,29 @@ export function ProjectCalendar({ projects, reservations, pickups, items, onClos
     })
   }
 
+  const dayNames = ["Pon", "Uto", "Sre", "Čet", "Pet", "Sub", "Ned"]
+
   const days = []
   for (let i = 0; i < adjustedFirstDay; i++) {
-    days.push(<div key={`empty-${i}`} className="h-28 border border-slate-200 dark:border-slate-800" />)
+    days.push(
+      <div key={`empty-${i}`} className="h-28 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+        <div className="text-xs text-muted-foreground p-1">{dayNames[i]}</div>
+      </div>
+    )
   }
 
-  for (let day = 1; day <= daysInMonth; day++) {
+  for (let day = 1; day <= maxDaysToShow; day++) {
     const projectsOnDay = getProjectsForDate(day)
+    const dayIndex = (adjustedFirstDay + day - 1) % 7
     days.push(
       <div
         key={day}
         className="h-28 border border-slate-200 dark:border-slate-800 p-1 overflow-y-auto hover:bg-slate-50 dark:hover:bg-slate-900"
       >
-        <div className="font-semibold text-sm mb-1">{day}</div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="font-semibold text-sm">{day}</span>
+          <span className="text-xs text-muted-foreground">{dayNames[dayIndex]}</span>
+        </div>
         {projectsOnDay.map((project) => (
           <div
             key={project.id}
@@ -87,7 +99,7 @@ export function ProjectCalendar({ projects, reservations, pickups, items, onClos
 
   return (
     <Card className={`p-3 ${isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={previousMonth}>
             <ChevronLeft className="h-4 w-4" />
@@ -109,39 +121,12 @@ export function ProjectCalendar({ projects, reservations, pickups, items, onClos
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-0 mb-1">
-        {["Pon", "Uto", "Sre", "Čet", "Pet", "Sub", "Ned"].map((day) => (
-          <div
-            key={day}
-            className="text-center font-semibold text-xs py-1 border border-slate-200 dark:border-slate-800"
-          >
-            {day}
-          </div>
-        ))}
-      </div>
+      <div className="grid grid-cols-7 gap-0 mt-1">{days}</div>
 
-      <div className="grid grid-cols-7 gap-0">{days}</div>
-
-      <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+      <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800">
         <h4 className="font-semibold mb-2 text-xs">Aktivni Projekti:</h4>
         <div className="flex flex-wrap gap-3">
           {projects.map((project) => {
-            const projectReservations = project.name
-              ? reservations?.filter((r) => {
-                  const item = items?.find((i) => i.id === r.item_id)
-                  return item?.project === project.name
-                })
-              : []
-            const projectPickups = project.name
-              ? pickups?.filter((p) => {
-                  const item = items?.find((i) => i.id === p.item_id)
-                  return item?.project === project.name && p.confirmed_at
-                })
-              : []
-
-            const reservationUsers = new Set(projectReservations.map((r) => r.user))
-            const pickupUsers = new Set(projectPickups.map((p) => p.user))
-
             return (
               <div
                 key={project.id}
@@ -169,9 +154,6 @@ export function ProjectCalendar({ projects, reservations, pickups, items, onClos
                     <div className="text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
                       {new Date(project.start_date).toLocaleDateString("sr-RS")} -{" "}
                       {new Date(project.end_date).toLocaleDateString("sr-RS")}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      Preuzimanje: {pickupUsers.size} | Rezervacija: {reservationUsers.size}
                     </div>
                   </div>
                 </div>

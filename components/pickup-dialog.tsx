@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2, FileText, Calendar } from 'lucide-react'
 import { useAuth } from "@/contexts/auth-context"
@@ -41,6 +43,7 @@ export function PickupDialog({ item, open, onOpenChange, onAddPickup }: PickupDi
   const [notes, setNotes] = useState("")
   const [codeError, setCodeError] = useState("")
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<Item>(item)
   const [pdfViewerState, setPdfViewerState] = useState<{ open: boolean; url: string; title: string }>({
     open: false,
     url: "",
@@ -104,7 +107,7 @@ export function PickupDialog({ item, open, onOpenChange, onAddPickup }: PickupDi
     }
 
     onAddPickup({
-      item_id: item.id,
+      item_id: selectedItem.id,
       quantity: safeNumber(quantity),
       picked_up_by: pickedUpBy,
       confirmation_code: confirmationCode || undefined,
@@ -126,9 +129,51 @@ export function PickupDialog({ item, open, onOpenChange, onAddPickup }: PickupDi
           <DialogHeader>
             <DialogTitle>Preuzimanje Artikla</DialogTitle>
             <DialogDescription>
-              {item.name} ({item.code})
+              Izaberite artikal za preuzimanje
             </DialogDescription>
           </DialogHeader>
+
+          <div className="mb-4 border rounded-lg max-h-[300px] overflow-y-auto">
+            <Table>
+              <TableHeader className="sticky top-0 bg-background">
+                <TableRow>
+                  <TableHead>Šifra</TableHead>
+                  <TableHead>Projekat</TableHead>
+                  <TableHead>Naziv</TableHead>
+                  <TableHead>Lokacija</TableHead>
+                  <TableHead className="text-right">Cena</TableHead>
+                  <TableHead className="text-right">Stanje</TableHead>
+                  <TableHead className="text-right">Akcija</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.filter(i => safeNumber(i.stock) > 0).map((itm) => (
+                  <TableRow 
+                    key={itm.id} 
+                    className={selectedItem.id === itm.id ? "bg-muted" : ""}
+                  >
+                    <TableCell className="font-mono">{itm.code}</TableCell>
+                    <TableCell>{itm.project}</TableCell>
+                    <TableCell>{itm.name}</TableCell>
+                    <TableCell>{itm.lokacija || "-"}</TableCell>
+                    <TableCell className="text-right">{safeNumber(itm.price).toFixed(2)} RSD</TableCell>
+                    <TableCell className="text-right">
+                      <Badge>{safeNumber(itm.stock)}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant={selectedItem.id === itm.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedItem(itm)}
+                      >
+                        {selectedItem.id === itm.id ? "Izabrano" : "Izaberi"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           {projectNames.length > 0 && (
             <div className="mb-4 border-b pb-4">
@@ -180,8 +225,18 @@ export function PickupDialog({ item, open, onOpenChange, onAddPickup }: PickupDi
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
+              <Label>Izabrani Artikal</Label>
+              <div className="p-3 bg-muted rounded-md">
+                <div className="font-medium">{selectedItem.name}</div>
+                <div className="text-sm text-muted-foreground">
+                  {selectedItem.code} | {selectedItem.project}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label>Dostupno na stanju</Label>
-              <div className="text-2xl font-bold">{safeNumber(item.stock).toFixed(2)}</div>
+              <div className="text-2xl font-bold">{safeNumber(selectedItem.stock).toFixed(2)}</div>
             </div>
 
             <div className="space-y-2">

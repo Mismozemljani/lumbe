@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/auth-context"
 import { useUsers } from "@/contexts/users-context"
 import { useProjects } from "@/contexts/projects-context"
@@ -38,6 +40,7 @@ export function ReservationDialog({ item, open, onOpenChange, onAddReservation }
   const [reservedBy, setReservedBy] = useState(user?.name || "")
   const [notes, setNotes] = useState("")
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<Item>(item)
   const [pdfViewerState, setPdfViewerState] = useState<{ open: boolean; url: string; title: string }>({
     open: false,
     url: "",
@@ -48,6 +51,10 @@ export function ReservationDialog({ item, open, onOpenChange, onAddReservation }
   const userNames = reservationUsers.map((u) => u.name).sort()
 
   const projectNames = Array.from(new Set(items.map((i) => i.project).filter(Boolean)))
+
+  console.log("[v0] ReservationDialog - projectNames:", projectNames)
+  console.log("[v0] ReservationDialog - projects:", projects)
+  console.log("[v0] ReservationDialog - items count:", items.length)
 
   const handleViewPdf = (projectNameOrObj: string | Project) => {
     let project: Project | undefined
@@ -73,7 +80,7 @@ export function ReservationDialog({ item, open, onOpenChange, onAddReservation }
     const reservationCode = `RES${Math.random().toString(36).substr(2, 6).toUpperCase()}`
 
     onAddReservation({
-      item_id: item.id,
+      item_id: selectedItem.id,
       quantity: Number.parseInt(quantity),
       reserved_by: reservedBy,
       reservation_code: reservationCode,
@@ -91,19 +98,59 @@ export function ReservationDialog({ item, open, onOpenChange, onAddReservation }
           <DialogHeader>
             <DialogTitle>Rezervacija Artikla</DialogTitle>
             <DialogDescription>
-              {item.name} ({item.code})
+              Izaberite artikal za rezervaciju
             </DialogDescription>
           </DialogHeader>
 
-          {projectNames.length > 0 && (
-            <div className="mb-4 border-b pb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium">Brzi pristup projektima:</h3>
-                <Button variant="outline" size="sm" onClick={() => setIsCalendarOpen(!isCalendarOpen)}>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  {isCalendarOpen ? "Sakrij" : "Prikaži"} Kalendar
-                </Button>
-              </div>
+          <div className="mb-4 border rounded-lg max-h-[300px] overflow-y-auto">
+            <Table>
+              <TableHeader className="sticky top-0 bg-background">
+                <TableRow>
+                  <TableHead>Šifra</TableHead>
+                  <TableHead>Projekat</TableHead>
+                  <TableHead>Naziv</TableHead>
+                  <TableHead>Lokacija</TableHead>
+                  <TableHead className="text-right">Dostupno</TableHead>
+                  <TableHead className="text-right">Akcija</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.filter(i => safeNumber(i.available) > 0).map((itm) => (
+                  <TableRow 
+                    key={itm.id} 
+                    className={selectedItem.id === itm.id ? "bg-muted" : ""}
+                  >
+                    <TableCell className="font-mono">{itm.code}</TableCell>
+                    <TableCell>{itm.project}</TableCell>
+                    <TableCell>{itm.name}</TableCell>
+                    <TableCell>{itm.lokacija || "-"}</TableCell>
+                    <TableCell className="text-right">
+                      <Badge>{safeNumber(itm.available)}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant={selectedItem.id === itm.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedItem(itm)}
+                      >
+                        {selectedItem.id === itm.id ? "Izabrano" : "Izaberi"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="mb-4 border-b pb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium">Brzi pristup projektima:</h3>
+              <Button variant="outline" size="sm" onClick={() => setIsCalendarOpen(!isCalendarOpen)}>
+                <Calendar className="h-4 w-4 mr-2" />
+                {isCalendarOpen ? "Sakrij" : "Prikaži"} Kalendar
+              </Button>
+            </div>
+            {projectNames.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {projectNames.map((projectName) => {
                   const project = projects.find((p) => p.name === projectName)
@@ -127,8 +174,10 @@ export function ReservationDialog({ item, open, onOpenChange, onAddReservation }
                   )
                 })}
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-sm text-muted-foreground">Nema projekata sa dodeljenim artiklima</p>
+            )}
+          </div>
 
           {isCalendarOpen && (
             <div className="mb-4 border-b pb-4">
@@ -145,8 +194,18 @@ export function ReservationDialog({ item, open, onOpenChange, onAddReservation }
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
+              <Label>Izabrani Artikal</Label>
+              <div className="p-3 bg-muted rounded-md">
+                <div className="font-medium">{selectedItem.name}</div>
+                <div className="text-sm text-muted-foreground">
+                  {selectedItem.code} | {selectedItem.project}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label>Dostupno</Label>
-              <div className="text-2xl font-bold">{safeNumber(item.available)}</div>
+              <div className="text-2xl font-bold">{safeNumber(selectedItem.available)}</div>
             </div>
 
             <div className="space-y-2">
